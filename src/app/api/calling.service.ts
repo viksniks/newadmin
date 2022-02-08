@@ -39,7 +39,7 @@ export class CallingService {
    }
    deleteData(key,fn)
    {
-    firebase.database().ref(this.appname + "/data/"+key+"/").remove(function (err) {
+    firebase.database().ref(this.appname + "/data1/"+key+"/").remove(function (err) {
       if(err)
       {
         fn(JSON.stringify(err));
@@ -123,7 +123,7 @@ insertColName(val)
    getData(fn)
    {
     
-    firebase.database().ref(this.appname + "/data/").once('value').then(function (snapshot) {
+    firebase.database().ref(this.appname + "/data1/").once('value').then(function (snapshot) {
         let data =  snapshot.val();
         fn(data);
    
@@ -132,7 +132,7 @@ insertColName(val)
 
    insertData(obj,fn)
    {
-    firebase.database().ref(this.appname + "/data/").set(obj, function (err) {
+    firebase.database().ref(this.appname + "/data1/").set(obj, function (err) {
       if(err)
       {
         fn(JSON.stringify(err));

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ANALYZE_FOR_ENTRY_COMPONENTS, Component } from '@angular/core';
 
 import { CallingService } from "../api/calling.service";
 import { ToastController, LoadingController } from "@ionic/angular";
@@ -18,6 +18,7 @@ export class HomePage {
 
   obj: any = {};
   keys: any[] = [];
+  keysTemp:any[]=[];
   location: string = "";
   comments: string = "";
   sorted: any[] = [];
@@ -25,7 +26,8 @@ export class HomePage {
   totalweight: string = "";
   totalpiece: string = "";
   clickedtime: string = "";
-  sektorObj: any = {};
+  routeObj: any = {};
+  routeKeys:string[]=[];
   sektorKeys: string[] = [];
   disabledCalcultion: boolean = true;
   init: boolean = false;
@@ -34,6 +36,7 @@ export class HomePage {
   cSponsor:string="";
   dSponsor:string="";
   sponser:any={};
+
 
   constructor(private service: CallingService, private loader: LoadingController, private toast: ToastController) {
 
@@ -167,6 +170,44 @@ export class HomePage {
     // this.newAttribute = {};
   }
 
+  checkKey(key)
+  {
+    for(var i = 0;i<this.keysTemp.length;i++)
+    {
+      if(this.keysTemp[i] == key)
+      {
+             return true;
+      }
+    }
+    return false;
+  }
+
+  // deleteFieldValue(key,i) {
+  //   if (window.confirm("BIZTOS VAGY BENNE ATTILA? DE TUTI?")) {
+  //     alert(key);
+
+  //     alert(this.checkKey(key));
+  //     if(this.checkKey(key))
+  //     {
+  //     var ref = this;
+  //     this.loader.create({
+  //       message: "kérlek várj..."
+  //     }).then((ele) => {
+
+  //       ele.present();
+  //       this.service.deleteData(key, function (data) {
+  //         console.log(data);
+  //         ele.dismiss();
+  //         ref.showToast(data);
+  //         ref.getData();
+  //       })
+  //     })
+  //   }else{
+  //     this.keys.splice(i,1);
+  //   }
+  //   }
+  // }
+
   deleteFieldValue(key) {
     if (window.confirm("BIZTOS VAGY BENNE ATTILA? DE TUTI?")) {
       var ref = this;
@@ -229,7 +270,7 @@ export class HomePage {
         //alert(str);
         ele.dismiss();
         ref.showToast(str);
-       // ref.insertMetaInfo();
+        ref.insertMetaInfo();
        // ref.service.insertBigFish(ref.bigfish);
         let temp = {};
         // if(ref.aSponsor)
@@ -332,13 +373,14 @@ export class HomePage {
         if (data) {
           console.log(JSON.stringify(data));
           ref.keys = Object.keys(data);
+          ref.keysTemp = ref.keys;
           ref.obj = data;
-        //  ref.getMetaInfo();
+          ref.getMetaInfo();
          // ref.getBigFish();
           //ref.service.gettSektorCount();
-          // if (ref.init) {
-          //   ref.orderBySektor();
-          // }
+         // if (ref.init) {
+            ref.orderByRoute();
+         // }
           // ref.service.getClickedTime(function (data1) {
           //   if (data1) {
           //     ref.clickedtime = data1;
@@ -386,10 +428,11 @@ export class HomePage {
           //   }
         }
         else {
-          // ref.getMetaInfo();
+           ref.getMetaInfo();
           // ref.getBigFish();
-          ref.keys = [];
-          ref.obj = {};
+       ref.keys = [];
+       ref.keysTemp = [];
+        ref.obj = {};
 
           // ref.service.getClickedTime(function (data1) {
           //   if (data1) {
@@ -446,40 +489,58 @@ export class HomePage {
     })
   }
 
-  orderBySektor() {
-    var ref = this;
-    var sektorTemp = [];
-    this.sektorObj = {};
+  orderByRoute() {
+  
+    var routeTemp = [];
+    this.routeObj = {};
 
-    for (var i = 0; i < ref.keys.length; i++) {
-      if (ref.obj[ref.keys[i]].sektor != "") {
-        sektorTemp.push(ref.obj[ref.keys[i]].sektor[0]);
+    for (var i = 0; i < this.keys.length; i++) {
+     let key = this.obj[this.keys[i]].route.toString().toLowerCase().trim();
+      if (key != "") {
+       // sektorTemp.push(ref.obj[ref.keys[i]].sektor[0]);
+       this.obj[this.keys[i]].avg = this.obj[this.keys[i]].avg.split('.')[0];
+       this.sorted.push(this.obj[this.keys[i]]);
+        let arr = [];
+       if(this.routeObj[key])
+       {
+         arr = this.routeObj[key];
+         
+
+       }
+       arr.push(this.obj[this.keys[i]]);
+     arr =   arr.sort(function(a,b)
+       {
+         return parseFloat(b.avg) - parseFloat(a.avg);
+       })
+       this.routeObj[key] = arr;
+       
       }
 
     }
-    console.log(sektorTemp);
-    sektorTemp = sektorTemp.filter((c, index) => {
-      return sektorTemp.indexOf(c) === index;
-    });
-    sektorTemp = sektorTemp.sort();
-    console.log(sektorTemp);
-    for (var j = 0; j < sektorTemp.length; j++) {
-      var arrtemp = [];
-      for (var k = 0; k < ref.keys.length; k++) {
-        if (sektorTemp[j] == ref.obj[ref.keys[k]].sektor.trim()[0]) {
-          arrtemp.push(ref.obj[ref.keys[k]])
-        }
+    this.sorted.sort(function(a,b)
+    {
+      return parseFloat(b.avg) - parseFloat(a.avg);
+    })
+    this.routeKeys = Object.keys(this.routeObj);
 
-      }
-      ref.sektorObj[sektorTemp[j]] = arrtemp;
-    }
-    ref.sektorKeys = Object.keys(ref.sektorObj);
-    console.log(ref.sektorObj);
-    ref.disabledCalcultion = false;
-    ref.service.insertSektorCount(ref.sektorKeys.length.toString());
+    console.log(this.routeObj);
+   
+  
   }
 
 //new code
+
+disbaledInsertion()
+{
+  for(let i = 0;i<this.keys.length;i++)
+  {
+    if(this.obj[this.keys[i]].avg == undefined)
+    {
+      return true;
+    }
+  }
+  return false;
+}
 
 calculateAvg()
 {
@@ -505,9 +566,19 @@ calculateAvg()
       return b-a;
     });
      console.log(arr);
+     if(arr[0] == 0 || arr[1] == 0)
+     {
+       console.log("arr = "+arr);
+      // if(this.obj[this.keys[i]].avg)
+       //{
+         this.obj[this.keys[i]]["avg"]= 0.00;
+      // }
+      
+     }else{
      let sum = arr[0] + arr[1];
      console.log(sum);
-       this.obj[this.keys[i]].avg =  ((sum)/2).toPrecision(2);
+       this.obj[this.keys[i]].avg =  ((sum)/2).toFixed(2);
+     }
     }
   }
 }
