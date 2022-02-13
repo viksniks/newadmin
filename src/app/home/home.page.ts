@@ -373,8 +373,15 @@ export class HomePage {
         if (data) {
           console.log(JSON.stringify(data));
           ref.keys = Object.keys(data);
+
           ref.keysTemp = ref.keys;
           ref.obj = data;
+          ref.keys.sort(function(a,b)
+          {
+            
+              return parseFloat(ref.obj[b].avg) - parseFloat(ref.obj[a].avg);
+          
+          })
           ref.getMetaInfo();
          // ref.getBigFish();
           //ref.service.gettSektorCount();
